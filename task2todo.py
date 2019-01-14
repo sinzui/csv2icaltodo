@@ -31,7 +31,8 @@ CSV_HEADERS = [
     TODO_SUMMARY, TODO_DTSTAMP, TODO_DUE, TODO_RRULE, TODO_PRIORITY,
     TODO_STATUS, TODO_CREATED, TODO_COMPLETED, TODO_SEQUENCE, TODO_LOCATION,
     TODO_DESCRIPTION, ICAL_CALENDAR]
-DEFAULT_CALENDAR = 'DEFAULT'
+UNKNOWN_TEMPLATE = (
+    'Unknown headers:\n{}\nThese column headers are understood:\n{}')
 
 
 def get_csv_tasks(csv_name, verbose=False):
@@ -40,10 +41,9 @@ def get_csv_tasks(csv_name, verbose=False):
         reader = csv.DictReader(csv_file)
         csv_todos = list(reader)
     headers = csv_todos[0].keys()
-    if set(headers) != set(CSV_HEADERS):
-        raise ValueError(
-            'The CSV file requires these column headers:\n{}'.format(
-                CSV_HEADERS))
+    unknown_headers = set(headers).difference(set(CSV_HEADERS))
+    if unknown_headers:
+        raise ValueError(UNKNOWN_TEMPLATE.format(unknown_headers, CSV_HEADERS))
     if verbose:
         print('Read {} tasks from {}.'.format(len(csv_todos) - 1, csv_name))
     return csv_todos
@@ -80,8 +80,8 @@ def put_ical(calendars, calendar_path, verbose=False, dry_run=False):
         if not dry_run:
             with open(calendar_name, 'w') as cal_file:
                 cal_file.write(calendar)
-        if verbose:
-            print('Wrote vitems to {}'.format(calendar_name))
+            if verbose:
+                print('Wrote vitems to {}'.format(calendar_name))
 
 
 def parse_args(argv=None):
@@ -94,7 +94,7 @@ def parse_args(argv=None):
         '-v', '--verbose', action="store_true", default=False,
         help='Increase verbosity.')
     parser.add_argument(
-        'csv_file', type=os.path.expanduser,
+        'csv_name', type=os.path.expanduser,
         help='Path to the sourceCSV file')
     parser.add_argument(
         'calendar_path', type=os.path.expanduser, nargs='?', default='./',
@@ -108,9 +108,9 @@ def parse_args(argv=None):
 
 def main(argv):
     args = parse_args(argv)
-    todos = get_csv_tasks(args.csv_name,  args.verbose, args.dry_run)
+    todos = get_csv_tasks(args.csv_name, args.verbose)
     calendars = todo_dict_to_ical(todos, args.calendar_name, args.verbose)
-    put_ical(calendars, args.verbose, args.dry_run)
+    put_ical(calendars, args.calendar_path, args.verbose, args.dry_run)
     return 0
 
 

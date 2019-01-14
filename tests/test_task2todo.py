@@ -27,14 +27,14 @@ class Csv2IcalTestCase(unittest.TestCase):
             ['-d', '-v', '~/foo.csv', '~/bar', 'tasks'])
         self.assertTrue(args.dry_run)
         self.assertTrue(args.verbose)
-        self.assertEqual('{}/foo.csv'.format(HOME), args.csv_file)
+        self.assertEqual('{}/foo.csv'.format(HOME), args.csv_name)
         self.assertEqual('{}/bar'.format(HOME), args.calendar_path)
         self.assertEqual('tasks', args.calendar_name)
         # Minimal
         args = task2todo.parse_args(['~/foo.csv'])
         self.assertFalse(args.dry_run)
         self.assertFalse(args.verbose)
-        self.assertEqual('{}/foo.csv'.format(HOME), args.csv_file)
+        self.assertEqual('{}/foo.csv'.format(HOME), args.csv_name)
         self.assertEqual('./', args.calendar_path)
         self.assertEqual('todos', args.calendar_name)
 
