@@ -79,7 +79,7 @@ class Csv2IcalTestCase(unittest.TestCase):
             self.make_csv_todo('five', status='2'),
             ]
         calendars = task2todo.todo_dict_to_ical(todos, 'todos')
-        self.assertEqual(2, len(calendars))
+        self.assertEqual(3, len(calendars))
         self.assertEqual(1, len(calendars['foo']))
         vtodo = calendars['foo'][0]
         self.assertEqual(
@@ -95,7 +95,7 @@ class Csv2IcalTestCase(unittest.TestCase):
         vtodo = calendars['todos'][2]
         self.assertIn('\nSUMMARY:four\n', vtodo)
         self.assertIn('\nSTATUS:COMPLETED\n', vtodo)
-        vtodo = calendars['todos'][3]
+        vtodo = calendars['todos Archive'][0]
         self.assertIn('\nSUMMARY:five\n', vtodo)
         self.assertIn('\nSTATUS:COMPLETED\n', vtodo)
 

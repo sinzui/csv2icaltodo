@@ -53,14 +53,17 @@ def todo_dict_to_ical(todos, calendar_name, verbose=False):
     """Return a dict of calendars and todo lists from a list of todo dicts."""
     calendars = collections.defaultdict(list)
     for todo in todos:
+        # Google includes a column named 'list' or 'calendar'
+        calendar = todo.pop(ICAL_CALENDAR, calendar_name)
         if TODO_STATUS in todo:
             # Google tasks records status as numbers instead of terms.
             if todo[TODO_STATUS] == '0':
                 todo[TODO_STATUS] = 'NEEDS-ACTION'
-            elif todo[TODO_STATUS] in ['1', '2']:
+            elif todo[TODO_STATUS] == '1':
                 todo[TODO_STATUS] = 'COMPLETED'
-        # Google includes a column named 'list' or 'calendar'
-        calendar = todo.pop(ICAL_CALENDAR, calendar_name)
+            elif todo[TODO_STATUS] == '2':
+                todo[TODO_STATUS] = 'COMPLETED'
+                calendar = '{} Archive'.format(calendar)
         parts = ['{}:{}'.format(*i) for i in todo.items()]
         vbody = [TODO_BEGIN] + parts + [TODO_END]
         vtodo = '\n'.join(vbody)
