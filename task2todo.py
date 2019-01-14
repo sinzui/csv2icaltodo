@@ -47,7 +47,7 @@ def get_csv_tasks(csv_name, verbose=False):
     return csv_todos
 
 
-def todo_dict_to_ical(todos, verbose=False):
+def todo_dict_to_ical(todos, calendar_name, verbose=False):
     """Return a list of todo calendars converted from a list of todo dicts."""
     calendars = collections.defaultdict(list)
     for todo in todos:
@@ -57,7 +57,8 @@ def todo_dict_to_ical(todos, verbose=False):
                 todo[TODO_STATUS] = 'NEEDS-ACTION'
             elif todo[TODO_STATUS] in ['1', '2']:
                 todo[TODO_STATUS] = 'COMPLETED'
-        calendar = todo.pop(ICAL_CALENDAR, DEFAULT_CALENDAR)
+        # Google includes a column named 'list' or 'calendar'
+        calendar = todo.pop(ICAL_CALENDAR, calendar_name)
         vbody = ['{}:{}'.format(*i) for i in todo.items()]
         vbody.insert(0, TODO_BEGIN)
         vbody.append(TODO_END)
@@ -66,8 +67,8 @@ def todo_dict_to_ical(todos, verbose=False):
     return calendars
 
 
-def put_ical(ical_data, ical_name, verbose=False, dry_run=False):
-    """Write ical_data to the file ical_name."""
+def put_ical(calendars, verbose=False, dry_run=False):
+    """Write ical_data to the file icalendar_name."""
 
 
 def parse_args(argv=None):
@@ -83,19 +84,17 @@ def parse_args(argv=None):
         'csv_file', type=os.path.expanduser,
         help='Path to the sourceCSV file')
     parser.add_argument(
-        'ical_file', type=os.path.expanduser, nargs='?',
+        'calendar_name', nargs='?', default='todos',
         help='Path to the destination ical file')
     args = parser.parse_args(argv)
-    if not getattr(args, 'ical_file'):
-        args.ical_file = '{}.ical'.format(args.csv_file)
     return args
 
 
 def main(argv):
     args = parse_args(argv)
-    csv_data = get_csv_tasks(args.csv_name,  args.verbose, args.dry_run)
-    ical_data = todo_dict_to_ical(csv_data, args.verbose)
-    put_ical(ical_data, args.ical_name, args.verbose, args.dry_run)
+    todos = get_csv_tasks(args.csv_name,  args.verbose, args.dry_run)
+    calendars = todo_dict_to_ical(todos, args.calendar_name, args.verbose)
+    put_ical(calendars, args.verbose, args.dry_run)
     return 0
 
 

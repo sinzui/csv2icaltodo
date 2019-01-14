@@ -23,17 +23,17 @@ def temp_dir():
 class Csv2IcalTestCase(unittest.TestCase):
 
     def test_get_args(self):
-        args = task2todo.parse_args(['-d', '-v', '~/foo.csv', '~/bar.ical'])
+        args = task2todo.parse_args(['-d', '-v', '~/foo.csv', 'tasks'])
         self.assertTrue(args.dry_run)
         self.assertTrue(args.verbose)
         self.assertEqual('{}/foo.csv'.format(HOME), args.csv_file)
-        self.assertEqual('{}/bar.ical'.format(HOME), args.ical_file)
+        self.assertEqual('tasks', args.calendar_name)
         # Minimal
         args = task2todo.parse_args(['~/foo.csv'])
         self.assertFalse(args.dry_run)
         self.assertFalse(args.verbose)
         self.assertEqual('{}/foo.csv'.format(HOME), args.csv_file)
-        self.assertEqual('{}/foo.csv.ical'.format(HOME), args.ical_file)
+        self.assertEqual('todos', args.calendar_name)
 
     def test_get_csv_tasks(self):
         with temp_dir() as path:
@@ -75,7 +75,7 @@ class Csv2IcalTestCase(unittest.TestCase):
             self.make_csv_todo('four', status='1'),
             self.make_csv_todo('five', status='2'),
         ]
-        calendars = task2todo.todo_dict_to_ical(todos)
+        calendars = task2todo.todo_dict_to_ical(todos, 'todos')
         self.assertEqual(2, len(calendars))
         self.assertEqual(1, len(calendars['foo']))
         vtodo = calendars['foo'][0]
@@ -83,15 +83,15 @@ class Csv2IcalTestCase(unittest.TestCase):
             'BEGIN:VTODO\nSTATUS:NEEDS-ACTION\nDTSTAMP:20181222T174737Z'
             '\nSUMMARY:one\nEND:VTODO',
             vtodo)
-        vtodo = calendars[task2todo.DEFAULT_CALENDAR][0]
+        vtodo = calendars['todos'][0]
         self.assertIn('\nSUMMARY:two\n', vtodo)
         self.assertIn('\nSTATUS:COMPLETED\n', vtodo)
-        vtodo = calendars[task2todo.DEFAULT_CALENDAR][1]
+        vtodo = calendars['todos'][1]
         self.assertIn('\nSUMMARY:three\n', vtodo)
         self.assertIn('\nSTATUS:NEEDS-ACTION\n', vtodo)
-        vtodo = calendars[task2todo.DEFAULT_CALENDAR][2]
+        vtodo = calendars['todos'][2]
         self.assertIn('\nSUMMARY:four\n', vtodo)
         self.assertIn('\nSTATUS:COMPLETED\n', vtodo)
-        vtodo = calendars[task2todo.DEFAULT_CALENDAR][3]
+        vtodo = calendars['todos'][3]
         self.assertIn('\nSUMMARY:five\n', vtodo)
         self.assertIn('\nSTATUS:COMPLETED\n', vtodo)
