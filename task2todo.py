@@ -44,11 +44,13 @@ def get_csv_tasks(csv_name, verbose=False):
         raise ValueError(
             'The CSV file requires these column headers:\n{}'.format(
                 CSV_HEADERS))
+    if verbose:
+        print('Read {} tasks from {}.'.format(len(csv_todos) - 1, csv_name))
     return csv_todos
 
 
 def todo_dict_to_ical(todos, calendar_name, verbose=False):
-    """Return a list of todo calendars converted from a list of todo dicts."""
+    """Return a dict of calendars and todo lists from a list of todo dicts."""
     calendars = collections.defaultdict(list)
     for todo in todos:
         if TODO_STATUS in todo:
@@ -59,16 +61,27 @@ def todo_dict_to_ical(todos, calendar_name, verbose=False):
                 todo[TODO_STATUS] = 'COMPLETED'
         # Google includes a column named 'list' or 'calendar'
         calendar = todo.pop(ICAL_CALENDAR, calendar_name)
-        vbody = ['{}:{}'.format(*i) for i in todo.items()]
-        vbody.insert(0, TODO_BEGIN)
-        vbody.append(TODO_END)
+        parts = ['{}:{}'.format(*i) for i in todo.items()]
+        vbody = [TODO_BEGIN] + parts + [TODO_END]
         vtodo = '\n'.join(vbody)
         calendars[calendar].append(vtodo)
+    if verbose:
+        names = calendars.keys()
+        print('Converted and collatted todos into {}.'.format(names))
     return calendars
 
 
-def put_ical(calendars, verbose=False, dry_run=False):
-    """Write ical_data to the file icalendar_name."""
+def put_ical(calendars, calendar_path, verbose=False, dry_run=False):
+    """Write dict of calendars and vitem lists to file."""
+    for name, vitems in calendars.items():
+        parts = [ICAL_BEGIN, ICAL_CALSCALE, ICAL_VERSION] + vitems + [ICAL_END]
+        calendar = '\n'.join(parts)
+        calendar_name = os.path.join(calendar_path, '{}.ics'.format(name))
+        if not dry_run:
+            with open(calendar_name, 'w') as cal_file:
+                cal_file.write(calendar)
+        if verbose:
+            print('Wrote vitems to {}'.format(calendar_name))
 
 
 def parse_args(argv=None):
@@ -83,6 +96,9 @@ def parse_args(argv=None):
     parser.add_argument(
         'csv_file', type=os.path.expanduser,
         help='Path to the sourceCSV file')
+    parser.add_argument(
+        'calendar_path', type=os.path.expanduser, nargs='?', default='./',
+        help='Path to save the ics files to')
     parser.add_argument(
         'calendar_name', nargs='?', default='todos',
         help='Path to the destination ical file')
