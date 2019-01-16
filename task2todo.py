@@ -14,6 +14,10 @@ ICAL_BEGIN = 'BEGIN:VCALENDAR'
 ICAL_CALSCALE = 'CALSCALE:GREGORIAN'
 ICAL_VERSION = 'VERSION:2.0'
 ICAL_END = 'END:VCALENDAR'
+ALARM_BEGIN = 'BEGIN:VALARM'
+ALARM_TRIGGER = 'TRIGGER'
+ALARM_ACTION = 'ACTION'
+ALARM_END = 'END:VALARM'
 TODO_BEGIN = 'BEGIN:VTODO'
 TODO_SUMMARY = 'SUMMARY'
 TODO_DTSTAMP = 'DTSTAMP'
@@ -30,7 +34,7 @@ TODO_END = 'END:VTODO'
 CSV_HEADERS = [
     TODO_SUMMARY, TODO_DTSTAMP, TODO_DUE, TODO_RRULE, TODO_PRIORITY,
     TODO_STATUS, TODO_CREATED, TODO_COMPLETED, TODO_SEQUENCE, TODO_LOCATION,
-    TODO_DESCRIPTION, ICAL_CALENDAR]
+    TODO_DESCRIPTION, ICAL_CALENDAR, ALARM_TRIGGER, ALARM_ACTION]
 UNKNOWN_TEMPLATE = (
     'Unknown headers:\n{}\nThese column headers are understood:\n{}')
 
@@ -64,8 +68,14 @@ def todo_dict_to_ical(todos, calendar_name, verbose=False):
             elif todo[TODO_STATUS] == '2':
                 todo[TODO_STATUS] = 'COMPLETED'
                 calendar = '{} Archive'.format(calendar)
+        alarm = []
+        if ALARM_TRIGGER in todo:
+            trigger = '{}:{}'.format(ALARM_TRIGGER, todo.pop(ALARM_TRIGGER))
+            action = '{}:{}'.format(
+                ALARM_ACTION, todo.pop(ALARM_ACTION, 'DISPLAY'))
+            alarm = [ALARM_BEGIN, trigger, action, ALARM_END]
         parts = ['{}:{}'.format(*i) for i in todo.items()]
-        vbody = [TODO_BEGIN] + parts + [TODO_END]
+        vbody = [TODO_BEGIN] + parts + alarm + [TODO_END]
         vtodo = '\n'.join(vbody)
         calendars[calendar].append(vtodo)
     if verbose:

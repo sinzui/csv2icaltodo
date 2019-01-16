@@ -99,6 +99,22 @@ class Csv2IcalTestCase(unittest.TestCase):
         self.assertIn('\nSUMMARY:five\n', vtodo)
         self.assertIn('\nSTATUS:COMPLETED\n', vtodo)
 
+    def test_todo_dict_to_ical_alarm(self):
+        todo = self.make_csv_todo('one', status='NEEDS-ACTION')
+        todo[task2todo.ALARM_TRIGGER] = '-PT5M'
+        todo[task2todo.ALARM_ACTION] = 'AUDIO'
+        calendars = task2todo.todo_dict_to_ical([todo], 'todos')
+        vtodo = calendars['todos'][0]
+        self.assertIn(
+            '\nBEGIN:VALARM\nTRIGGER:-PT5M\nACTION:AUDIO\nEND:VALARM\n',
+            vtodo)
+        # With default action.
+        todo = self.make_csv_todo('one', status='NEEDS-ACTION')
+        todo[task2todo.ALARM_TRIGGER] = '-PT5M'
+        calendars = task2todo.todo_dict_to_ical([todo], 'todos')
+        vtodo = calendars['todos'][0]
+        self.assertIn('\nACTION:DISPLAY\n', vtodo)
+
     def test_put_ical(self):
         todos = [
             self.make_csv_todo('one', status='NEEDS-ACTION', calendar='foo'),
