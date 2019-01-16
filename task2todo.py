@@ -69,12 +69,12 @@ def todo_dict_to_ical(todos, calendar_name, verbose=False):
                 todo[TODO_STATUS] = 'COMPLETED'
                 calendar = '{} Archive'.format(calendar)
         alarm = []
-        if ALARM_TRIGGER in todo:
+        if ALARM_TRIGGER in todo and todo[ALARM_TRIGGER]:
             trigger = '{}:{}'.format(ALARM_TRIGGER, todo.pop(ALARM_TRIGGER))
             action = '{}:{}'.format(
                 ALARM_ACTION, todo.pop(ALARM_ACTION, 'DISPLAY'))
             alarm = [ALARM_BEGIN, trigger, action, ALARM_END]
-        parts = ['{}:{}'.format(*i) for i in todo.items()]
+        parts = ['{}:{}'.format(k, v) for k, v in todo.items() if v]
         vbody = [TODO_BEGIN] + parts + alarm + [TODO_END]
         vtodo = '\n'.join(vbody)
         calendars[calendar].append(vtodo)

@@ -2,7 +2,7 @@
 
 This script converts task lists exported to CSV format into ICal todo lists.
 
-These headers are supported: SUMMARY, TSTAMP, DUE, RRULE, PRIORITY,
+These headers are supported: SUMMARY, DTSTAMP, DUE, RRULE, PRIORITY,
 STATUS, CREATED, COMPLETED, SEQUENCE, LOCATION, DESCRIPTION. You can rename
 headers in an existing CSV to match the supported headers, then delete the
 unsupported headers and columns.

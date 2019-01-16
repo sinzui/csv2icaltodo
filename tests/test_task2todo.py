@@ -115,6 +115,15 @@ class Csv2IcalTestCase(unittest.TestCase):
         vtodo = calendars['todos'][0]
         self.assertIn('\nACTION:DISPLAY\n', vtodo)
 
+    def test_todo_dict_to_ical_empty(self):
+        todo = self.make_csv_todo('one', status='NEEDS-ACTION')
+        todo[task2todo.TODO_DESCRIPTION] = ''
+        todo[task2todo.ALARM_TRIGGER] = ''
+        calendars = task2todo.todo_dict_to_ical([todo], 'todos')
+        vtodo = calendars['todos'][0]
+        self.assertNotIn('\nDESCRIPTION\n', todo)
+        self.assertNotIn('\nACTION:TRIGGER\n', vtodo)
+
     def test_put_ical(self):
         todos = [
             self.make_csv_todo('one', status='NEEDS-ACTION', calendar='foo'),
